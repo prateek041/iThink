@@ -1,0 +1,20 @@
+{
+  "name": "ithink",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"npm:dev:ithink-debate\" \"npm:dev:websocket\"",
+    "dev:ithink-debate": "npm run dev --prefix ithink-debate",
+    "dev:websocket": "npm run dev --prefix websocket-server",
+    "build": "npm run build --prefix nextjs-client && npm run build --prefix proxy-server",
+    "install:all": "npm install && npm install --prefix nextjs-client && npm install --prefix proxy-server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

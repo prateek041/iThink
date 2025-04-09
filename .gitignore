@@ -1,7 +1,17 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
+node_modules/
+.DS_store
+
+# debate dependencies
+ithink-debate/.next/
+ithink-debate/node_modules/
+
+# next.js
+ithink-debate/.next/
+ithink-debate/out/
+
+.next/
 /.pnp
 .pnp.*
 .yarn/*
@@ -13,9 +23,6 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
 
 # production
 /build
@@ -39,3 +46,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Proxy server configuration
+websocket-server/node_modules/
