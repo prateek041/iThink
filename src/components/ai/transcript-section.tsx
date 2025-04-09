@@ -1,9 +1,7 @@
 "use client"
 
-import useWebRTCAudioSession from "@/hooks/use-webrtc";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import * as React from "react"
-import { tools } from "@/lib/tools/tools";
 
 interface AIProps {
   type: string
