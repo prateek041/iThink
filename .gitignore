@@ -49,3 +49,25 @@ next-env.d.ts
 
 # Proxy server configuration
 websocket-server/node_modules/
+websocket-server/dist/
+websocket-server/.env
+websocket-server/npm-debug.log*
+
+# Root dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Proxy Server Specific
+
+
+# Next.js Client Specific (Combine ignores from your original project)
+ithink-debate/.env*
+ithink-debate/npm-debug.log*
+ithink-debate/yarn-debug.log*
+ithink-debate/yarn-error.log*
+
+# Other common ignores
+.DS_Store
+Thumbs.db
