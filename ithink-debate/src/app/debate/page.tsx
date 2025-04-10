@@ -1,7 +1,8 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import React, { useState, useRef, useEffect, useCallback } from "react"
+import { SessionUpdateEvent } from "openai/src/resources/beta/realtime/realtime.js"
+import React, { useState, useRef, useEffect } from "react"
 import { io, Socket } from "socket.io-client"
 
 export default function RealtimeChatPage() {
@@ -15,6 +16,19 @@ export default function RealtimeChatPage() {
     console.log('❌: Socket.IO disconnected to proxy! Socket ID:', socketRef.current?.id);
     setStatus("Disconnected")
     setIsConnected(false)
+  }
+
+  const sampleEvent: SessionUpdateEvent = {
+    type: "session.update",
+    session: {
+      modalities: ["text"], // disable audio for now.
+      model: "gpt-4o-realtime-preview-2024-12-17"
+    }
+  }
+
+  const sendSampleEvent = () => {
+    console.log("SENDING SAMPLE EVENT")
+    socketRef.current?.emit("rlt_send", sampleEvent)
   }
 
   useEffect(() => {
@@ -35,7 +49,8 @@ export default function RealtimeChatPage() {
 
       // Adjust URL format if needed (socket.io typically doesn't need ws:// prefix)
       // Ensure NEXT_PUBLIC_WSS_URL is like 'http://localhost:3001' or 'https://your-proxy.onrender.com'
-      const connectionUrl = wssUrl.replace(/^ws(s?):/, 'http$1:'); // Replace ws:// or wss:// with http:// or https://
+      // const connectionUrl = wssUrl.replace(/^ws(s?):/, 'http$1:'); // Replace ws:// or wss:// with http:// or https://
+      const connectionUrl = wssUrl
       console.log(`Attempting Socket.IO connection to: ${connectionUrl}`);
       setStatus("Connecting...");
 
@@ -53,6 +68,7 @@ export default function RealtimeChatPage() {
         console.log('✅: Socket.IO connected to proxy! Socket ID:', socket?.id);
         setStatus("Connected");
         setIsConnected(true);
+        // sendSampleEvent()
       });
 
       socket.on('connect_error', (err) => {
@@ -70,6 +86,15 @@ export default function RealtimeChatPage() {
         socketRef.current = null; // Clean up ref on disconnect
         // Socket.IO will attempt auto-reconnect based on options unless disconnect was client-initiated
       });
+
+      socket.on("ws_error", (data) => {
+        console.log("ERROR OCCURED", data)
+        setStatus(`Error: ${data.message || 'Unknown error'}`)
+      })
+
+      socket.on("ws_ready", () => {
+        console.log("EVERYTHING GOOD")
+      })
     }
     connect()
   }, [])
@@ -77,7 +102,14 @@ export default function RealtimeChatPage() {
   return (
     <div className="h-full flex justify-center items-center flex-col gap-y-5">
       <h1 className="text-4xl font-bold">Socket Implementation</h1>
-      <Button onClick={disconnect}>Disconnect</Button>
+      <p>Status: {status}</p>
+      <Button onClick={disconnect} disabled={!isConnected}>Disconnect</Button>
+      <Button onClick={sendSampleEvent} disabled={!isConnected}>Check Connection</Button>
+      {/* <div> */}
+      {/*   {messages.map((msg, index) => ( */}
+      {/*     <p key={index}>{msg}</p> */}
+      {/*   ))} */}
+      {/* </div> */}
     </div>
   )
 
