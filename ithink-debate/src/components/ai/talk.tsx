@@ -37,9 +37,6 @@ export default function RealTimeTalk() {
         return
       }
 
-      // Adjust URL format if needed (socket.io typically doesn't need ws:// prefix)
-      // Ensure NEXT_PUBLIC_WSS_URL is like 'http://localhost:3001' or 'https://your-proxy.onrender.com'
-      // const connectionUrl = wssUrl.replace(/^ws(s?):/, 'http$1:'); // Replace ws:// or wss:// with http:// or https://
       const connectionUrl = wssUrl
       console.log(`Attempting Socket.IO connection to: ${connectionUrl}`);
       setStatus("Connecting...");

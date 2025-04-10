@@ -1,10 +1,7 @@
 "use client";
 
-import { ModeToggle } from "@/components/theme-toggler";
 import { TopicSelector } from "@/components/topic/topic-selector";
-import { Button } from "@/components/ui/button";
 import { useDebate } from "@/contexts/debate-context";
-import Link from "next/link";
 
 function DebateInterface() {
   const { state } = useDebate();
@@ -29,16 +26,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="w-full flex justify-between items-center p-4 border-b">
-        <h1 className="text-xl font-bold">iThink</h1>
-        <div className="flex gap-x-5">
-          <Link href={"/debate"}>
-            <Button>Start Debate</Button>
-          </Link>
-          <ModeToggle />
-        </div>
-      </header>
-
       <main className="flex-1">
         {state.status === "not_started" ? (
           <TopicSelector onTopicSelect={setTopic} />

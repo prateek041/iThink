@@ -98,26 +98,26 @@ io.on("connect", async (socket: Socket) => {
       throw new Error("FAILED ❌: Azure Client initialisation failed")
     }
 
-    azureRtClient.socket.on("open", (azureSocket: any) => {
-      console.log(`✅: ${azureSocket} Azure WebSocket ready!`);
-      // console.log("typof", typeof (azureSocket))
-      azureRtClient?.send({
-        type: "session.update",
-        session: {
-          modalities: ["text"],
-          model: "gpt-4o-mini-realtime-preview",
-        },
-      });
-      azureRtClient?.send({
-        type: "conversation.item.create",
-        item: {
-          type: "message",
-          role: "user",
-          content: [{ type: "input_text", text: "Write a Poem for me in exactly 100 words" }],
-        },
-      });
-      azureRtClient?.send({ type: "response.create" }); // ready to receive response from model.
-    });
+    // azureRtClient.socket.on("open", (azureSocket: any) => {
+    //   console.log(`✅: ${azureSocket} Azure WebSocket ready!`);
+    //   // console.log("typof", typeof (azureSocket))
+    //   azureRtClient?.send({
+    //     type: "session.update",
+    //     session: {
+    //       modalities: ["text"],
+    //       model: "gpt-4o-mini-realtime-preview",
+    //     },
+    //   });
+    //   azureRtClient?.send({
+    //     type: "conversation.item.create",
+    //     item: {
+    //       type: "message",
+    //       role: "user",
+    //       content: [{ type: "input_text", text: "Write a Poem for me in exactly 100 words" }],
+    //     },
+    //   });
+    //   azureRtClient?.send({ type: "response.create" }); // ready to receive response from model.
+    // });
 
     azureRtClient.on("session.created", (event: SessionCreatedEvent) => {
       // console.log("SUCCESS: Session Created", event.session)
@@ -129,10 +129,7 @@ io.on("connect", async (socket: Socket) => {
       socket.emit("response_text_delta", event)
     })
 
-    // azureRtClient.on('response.text.delta', (event: ResponseTextDeltaEvent ) => {
-    //   socket.emit("response_text_delta", {event: event.delta})
-    // } );
-    // azureRtClient.on('response.text.done', () => console.log());
+    azureRtClient.on('response.text.done', (event) => console.log("END:", event.content_index));
 
     // azureRtClient.on('response.done', () => console.log("RESPONSE FINISHED"));
 

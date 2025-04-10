@@ -4,6 +4,9 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { TranslationsProvider } from "@/components/translation-context";
 import { DebateProvider } from "@/contexts/debate-context";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/theme-toggler";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,7 +41,17 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <DebateProvider>
-              <TranslationsProvider>{children}</TranslationsProvider>
+              <TranslationsProvider>
+                <header className="w-full flex justify-between items-center p-4 border-b">
+                  <h1 className="text-xl font-bold">iThink</h1>
+                  <div className="flex gap-x-5">
+                    <Link href={"/debate"}>
+                      <Button>Start Debate</Button>
+                    </Link>
+                    <ModeToggle />
+                  </div>
+                </header>
+                {children}</TranslationsProvider>
             </DebateProvider>
           </ThemeProvider>
         </body>
