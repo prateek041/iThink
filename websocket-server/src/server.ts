@@ -1,22 +1,14 @@
 import * as dotenv from "dotenv";
 import { AzureOpenAI } from "openai";
 import { OpenAIRealtimeWS } from "openai/beta/realtime/ws";
-import {
-  DefaultAzureCredential,
-  getBearerTokenProvider,
-} from "@azure/identity";
 import http from "http";
 import { Server as SocketIOServer, Socket } from "socket.io";
 import { OpenAIRealtimeError } from "openai/beta/realtime/internal-base";
-import { EventEmitter } from "openai/lib/EventEmitter";
 import { SessionCreatedEvent } from "openai/resources/beta/realtime/realtime";
 import { Session } from "openai/resources/beta/realtime/sessions";
+import { ResponseTextDeltaEvent } from "openai/lib/responses/EventTypes";
 
 dotenv.config({ path: ".env" });
-
-const cred = new DefaultAzureCredential();
-const scope = "https://cognitiveservices.azure.com/.default";
-const azureADTokenProvider = getBearerTokenProvider(cred, scope);
 
 const PORT: number = parseInt(process.env.PORT || "3001", 10);
 
@@ -121,7 +113,7 @@ io.on("connect", async (socket: Socket) => {
         item: {
           type: "message",
           role: "user",
-          content: [{ type: "input_text", text: "Write a Poem for me in exactly 10 words" }],
+          content: [{ type: "input_text", text: "Write a Poem for me in exactly 100 words" }],
         },
       });
       azureRtClient?.send({ type: "response.create" }); // ready to receive response from model.
@@ -133,7 +125,13 @@ io.on("connect", async (socket: Socket) => {
       socket.emit("ws_ready");
     })
 
-    // azureRtClient.on('response.text.delta', (event) => process.stdout.write(event.delta));
+    azureRtClient.on("response.text.delta", (event) => {
+      socket.emit("response_text_delta", event)
+    })
+
+    // azureRtClient.on('response.text.delta', (event: ResponseTextDeltaEvent ) => {
+    //   socket.emit("response_text_delta", {event: event.delta})
+    // } );
     // azureRtClient.on('response.text.done', () => console.log());
 
     // azureRtClient.on('response.done', () => console.log("RESPONSE FINISHED"));

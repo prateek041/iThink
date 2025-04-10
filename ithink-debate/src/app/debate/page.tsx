@@ -1,13 +1,16 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { SessionUpdateEvent } from "openai/src/resources/beta/realtime/realtime.js"
+import { Card, CardContent } from "@/components/ui/card"
+import { ResponseTextDeltaEvent } from "openai/lib/responses/EventTypes.mjs"
 import React, { useState, useRef, useEffect } from "react"
 import { io, Socket } from "socket.io-client"
 
 export default function RealtimeChatPage() {
   const [status, setStatus] = useState<string>("Idle")
   const [isConnected, setIsConnected] = useState<boolean>(false)
+
+  const [responseText, setResponseText] = useState<string>("")
 
   const socketRef = useRef<Socket | null>(null)
 
@@ -16,19 +19,6 @@ export default function RealtimeChatPage() {
     console.log('❌: Socket.IO disconnected to proxy! Socket ID:', socketRef.current?.id);
     setStatus("Disconnected")
     setIsConnected(false)
-  }
-
-  const sampleEvent: SessionUpdateEvent = {
-    type: "session.update",
-    session: {
-      modalities: ["text"], // disable audio for now.
-      model: "gpt-4o-realtime-preview-2024-12-17"
-    }
-  }
-
-  const sendSampleEvent = () => {
-    console.log("SENDING SAMPLE EVENT")
-    socketRef.current?.emit("rlt_send", sampleEvent)
   }
 
   useEffect(() => {
@@ -95,6 +85,11 @@ export default function RealtimeChatPage() {
       socket.on("ws_ready", () => {
         console.log("EVERYTHING GOOD")
       })
+
+      socketRef?.current?.on("response_text_delta", (data: ResponseTextDeltaEvent) => {
+        setResponseText((prev) => prev + data.delta)
+      })
+
     }
     connect()
   }, [])
@@ -104,7 +99,11 @@ export default function RealtimeChatPage() {
       <h1 className="text-4xl font-bold">Socket Implementation</h1>
       <p>Status: {status}</p>
       <Button onClick={disconnect} disabled={!isConnected}>Disconnect</Button>
-      <Button onClick={sendSampleEvent} disabled={!isConnected}>Check Connection</Button>
+      <Card className="max-w-sm">
+        <CardContent>
+          {responseText}
+        </CardContent>
+      </Card>
       {/* <div> */}
       {/*   {messages.map((msg, index) => ( */}
       {/*     <p key={index}>{msg}</p> */}
