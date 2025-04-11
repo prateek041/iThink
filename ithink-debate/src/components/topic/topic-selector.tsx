@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const exampleTopics = [
   "USA Tarrifs, should you be scared as a citizen of US?",
@@ -16,16 +18,18 @@ interface TopicSelectorProps {
 }
 
 export function TopicSelector({ onTopicSelect }: TopicSelectorProps) {
+  const router = useRouter()
   const [customTopic, setCustomTopic] = useState("");
 
   const handleExampleSelect = (topic: string) => {
-    onTopicSelect(topic);
+    router.push(`/debate?topic=${encodeURIComponent(topic)}`)
   };
 
   const handleCustomSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (customTopic.trim()) {
       onTopicSelect(customTopic.trim());
+      router.push(`/debate?topic=${encodeURIComponent(customTopic)}`)
       setCustomTopic("");
     }
   };
@@ -44,17 +48,19 @@ export function TopicSelector({ onTopicSelect }: TopicSelectorProps) {
       <div className="w-full mt-8 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {exampleTopics.map((topic, index) => (
-            <Card
-              key={index}
-              className={cn(
-                "p-4 cursor-pointer hover:shadow-lg transition-shadow",
-                "text-sm text-center"
-              )}
-              onClick={() => handleExampleSelect(topic)}
-            >
-              {topic}
-            </Card>
-          ))}
+            <Link key={index} href={`/debate?topic=${encodeURIComponent(topic)}`}>
+              <Card
+                key={index}
+                className={cn(
+                  "p-4 cursor-pointer hover:shadow-lg transition-shadow",
+                  "text-sm text-center"
+                )}
+                onClick={() => handleExampleSelect(topic)}
+              >
+                {topic}
+              </Card>
+
+            </Link>))}
         </div>
 
         <form onSubmit={handleCustomSubmit} className="space-y-2">

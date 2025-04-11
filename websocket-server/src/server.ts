@@ -4,7 +4,7 @@ import { OpenAIRealtimeWS } from "openai/beta/realtime/ws";
 import http from "http";
 import { Server as SocketIOServer, Socket } from "socket.io";
 import { OpenAIRealtimeError } from "openai/beta/realtime/internal-base";
-import { RealtimeServerEvent, SessionCreatedEvent } from "openai/resources/beta/realtime/realtime";
+import { SessionCreatedEvent } from "openai/resources/beta/realtime/realtime";
 import { Session } from "openai/resources/beta/realtime/sessions";
 
 dotenv.config({ path: ".env" });

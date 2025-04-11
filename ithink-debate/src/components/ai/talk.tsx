@@ -1,16 +1,20 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ResponseTextDeltaEvent } from "openai/lib/responses/EventTypes.mjs";
 import { ResponseAudioDeltaEvent } from "openai/resources/responses/responses.mjs";
 import React, { useState, useRef, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
-export default function RealTimeTalk() {
+interface DebaterArgs {
+  role: string,
+  currentTurn: string,
+  onFinish: (responseText: string) => void
+}
+
+export default function Debater({ role, currentTurn, onFinish }: DebaterArgs) {
   const [status, setStatus] = useState<string>("Idle");
   const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [responseText, setResponseText] = useState<string>("");
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
   const socketRef = useRef<Socket | null>(null);
@@ -88,11 +92,6 @@ export default function RealTimeTalk() {
       socket.on("response_audio_delta", (event: ResponseAudioDeltaEvent) => {
         console.log("FRONTED RECEIVING", event);
         handleAudioChunk(event.delta);
-      });
-
-      socket.on("response_text_delta", (data: ResponseTextDeltaEvent) => {
-        console.log("FRONTEND RECEIVING TEXT", data)
-        setResponseText((prev) => prev + data.delta);
       });
     };
     connect();
@@ -218,15 +217,15 @@ export default function RealTimeTalk() {
   };
 
   return (
-    <div className="h-full flex justify-center items-center flex-col gap-y-5">
-      <p>Status: {status}</p>
-      <p>Connected {isConnected}</p>
-      <Button onClick={triggerFlow}>Trigger Flow</Button>
-      {responseText && (
-        <Card className="max-w-sm">
-          <CardContent>{responseText}</CardContent>
-        </Card>
-      )}
+    <div className="h-full flex w-full justify-center items-center flex-col gap-y-5">
+      <Card className="w-full">
+        <CardHeader><CardTitle>{role}</CardTitle></CardHeader>
+        <CardContent className="flex flex-col gap-y-5">
+          <p>Status: {status}</p>
+          <p>Connected {isConnected}</p>
+          <Button onClick={triggerFlow}>Trigger Flow</Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }
