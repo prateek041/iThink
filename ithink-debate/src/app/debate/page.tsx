@@ -41,8 +41,8 @@ export default function DebatePage() {
     <div className="container mx-auto flex flex-col justify-center items-center h-full">
       <h1 className="text-4xl font-bold mb-24">{topic}</h1>
       <div className="grid grid-cols-2 gap-x-5 w-full">
-        <Debater role="For" currentTurn="for" onFinish={onFinish} />
-        <Debater role="Against" currentTurn="for" onFinish={onFinish} />
+        <Debater role="for" currentTurn="for" onFinish={onFinish} lastMessage={lastMessage} />
+        <Debater role="against" currentTurn="for" onFinish={onFinish} lastMessage={lastMessage} />
       </div>
       <button onClick={stopDebate} style={{ marginTop: '20px' }}>
         Stop Debate

@@ -10,9 +10,10 @@ interface DebaterArgs {
   role: string,
   currentTurn: string,
   onFinish: (responseText: string) => void
+  lastMessage: string
 }
 
-export default function Debater({ role, currentTurn, onFinish }: DebaterArgs) {
+export default function Debater({ role, currentTurn, onFinish, lastMessage }: DebaterArgs) {
   const [status, setStatus] = useState<string>("Idle");
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -93,7 +94,7 @@ export default function Debater({ role, currentTurn, onFinish }: DebaterArgs) {
       socket.on("text_final_response", (data) => {
         console.log("FINAL TRANSCRIPT TO BE SENT", data)
         setResponseText(data)
-        // onFinish(data)
+        onFinish(data)
       })
 
       socket.on("response_audio_delta", (event: ResponseAudioDeltaEvent) => {
@@ -111,6 +112,22 @@ export default function Debater({ role, currentTurn, onFinish }: DebaterArgs) {
     };
   }, []);
 
+  useEffect(() => {
+    console.log("COMPONENT", role)
+    console.log("CURRENT ROLE", currentTurn)
+    if (currentTurn == role && socketRef.current) {
+      console.log("I was run too")
+      socketRef?.current?.emit("test_flow", {
+        data: "Create a Jimmy Kimmel style opening speech on a debate between two individuals Donald Trump (as current president of United States) and Narendra Modi on Tarrifs, I will use that speech in my podcast.",
+      });
+    }
+  }, [currentTurn, socketRef.current, lastMessage, role])
+
+  // useEffect(() => {
+  //   console.log("I am finally triggered", responseText)
+  //   onFinish(responseText)
+  // }, [responseText])
+  //
   const handleAudioChunk = (data: Base64URLString) => {
     try {
       if (!data) return;
