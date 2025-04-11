@@ -11,21 +11,21 @@ export default function RealTimeTalk() {
   const [status, setStatus] = useState<string>("Idle");
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [responseText, setResponseText] = useState<string>("");
-  const [isPlaying, setIsPlaying] = useState<boolean>(false)
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
   const socketRef = useRef<Socket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null)
-  const audioChunksRef = useRef<string[]>([]);
-  const processingAudio = useRef<boolean>(false)
-  const audioBuffersRef = useRef<AudioBuffer[]>([])
+  const processingAudio = useRef<boolean>(false);
+  const audioQueue = useRef<Float32Array[]>([]);
+  const sampleRate = useRef<number>(24000);
+  const channels = useRef<number>(1);
 
   // Socket connection setup
   useEffect(() => {
     let socket: Socket | null = null;
 
-    const AudioContext = window.AudioContext
-    audioContextRef.current = new AudioContext()
+    const AudioContext = window.AudioContext;
+    audioContextRef.current = new AudioContext();
 
     const connect = async () => {
       if (socketRef.current || status === "connecting") {
@@ -86,9 +86,9 @@ export default function RealTimeTalk() {
       });
 
       socket.on("response_audio_delta", (event: ResponseAudioDeltaEvent) => {
-        console.log("FRONTED RECEIVING", event)
-        handleAudioChunk(event.delta)
-      })
+        console.log("FRONTED RECEIVING", event);
+        handleAudioChunk(event.delta);
+      });
 
       socket.on("response_text_delta", (data: ResponseTextDeltaEvent) => {
         setResponseText((prev) => prev + data.delta);
@@ -108,92 +108,124 @@ export default function RealTimeTalk() {
     try {
       if (!data) return;
 
-      audioChunksRef.current.push(data)
+      const audioData = convertBase64PCMToFloat32(data);
+      audioQueue.current.push(audioData);
 
-      if (!processingAudio.current) {
-        processAudioQueue()
+      if (!processingAudio.current && !isPlaying) {
+        processAudioQueue();
       }
-
     } catch (error) {
-      console.error("Error processing audio chunks", error)
+      console.error("Error processing audio chunks", error);
     }
-  }
+  };
+
+  const convertBase64PCMToFloat32 = (base64Data: string): Float32Array => {
+    const binaryString = atob(base64Data);
+    const len = binaryString.length;
+
+    const pcmData = new Int16Array(len / 2);
+
+    let offset = 0;
+    for (let i = 0; i < len; i += 2) {
+      const byte1 = binaryString.charCodeAt(i);
+      const byte2 = binaryString.charCodeAt(i + 1);
+      pcmData[offset++] = byte1 + (byte2 << 8);
+    }
+
+    const floatData = new Float32Array(pcmData.length);
+    for (let i = 0; i < pcmData.length; i++) {
+      floatData[i] = pcmData[i] / 32768.0;
+    }
+
+    return floatData;
+  };
 
   const processAudioQueue = async (): Promise<void> => {
-    if (audioChunksRef.current.length === 0) {
-      processingAudio.current = false
-      return
-    }
-
-    processingAudio.current = true
-    const base64Audio = audioChunksRef.current.shift()!
-
-    try {
-      if (!audioContextRef.current) {
-        throw new Error("AudioContext not initialised")
-      }
-
-      const binaryData = atob(base64Audio)
-      const len = binaryData.length
-      const bytes = new Uint8Array(len)
-
-      for (let i = 0; i < len; i++) {
-        bytes[i] = binaryData.charCodeAt(i)
-      }
-
-      const audioBuffer = await audioContextRef.current.decodeAudioData(bytes.buffer)
-
-      audioBuffersRef.current.push(audioBuffer)
-
-      if (!isPlaying) {
-        playNextBuffer()
-      }
-    } catch (error) {
-      console.error("Error decoding audio", error)
-      processingAudio.current = false
-
-    }
-  }
-
-  const playNextBuffer = (): void => {
-    if (!audioContextRef.current) return;
-
-    if (audioBuffersRef.current.length === 0) {
-      setIsPlaying(false);
+    if (audioQueue.current.length === 0) {
+      processingAudio.current = false;
       return;
     }
 
-    setIsPlaying(true);
-    const buffer = audioBuffersRef.current.shift()!;
+    processingAudio.current = true;
+    try {
+      if (!audioContextRef.current) {
+        throw new Error("AudioContext not initialized");
+      }
+
+      const audioData = audioQueue.current.shift()!;
+      const audioBuffer = createAudioBuffer(audioData);
+      playAudioBuffer(audioBuffer);
+    } catch (error) {
+      console.error("Error processing audio", error);
+      processingAudio.current = false;
+
+      if (audioQueue.current.length > 0 && !isPlaying) {
+        processAudioQueue();
+      }
+    }
+  };
+
+  const createAudioBuffer = (floatData: Float32Array): AudioBuffer => {
+    if (!audioContextRef.current) {
+      throw new Error("AudioContext not initialized");
+    }
+
+    const audioBuffer = audioContextRef.current.createBuffer(
+      channels.current,
+      floatData.length,
+      sampleRate.current
+    );
+
+    const channelData = audioBuffer.getChannelData(0);
+    channelData.set(floatData);
+
+    return audioBuffer;
+  };
+
+  const playAudioBuffer = (buffer: AudioBuffer): void => {
+    if (!audioContextRef.current) return;
+
+    if (audioContextRef.current.state === "suspended") {
+      audioContextRef.current.resume();
+    }
+
     const source = audioContextRef.current.createBufferSource();
     source.buffer = buffer;
     source.connect(audioContextRef.current.destination);
-    audioSourceRef.current = source;
+
+    source.start(0);
+    setIsPlaying(true);
+    setStatus("Playing audio stream");
 
     source.onended = () => {
-      playNextBuffer(); // Play next buffer when current one ends
+      setIsPlaying(false);
+      processingAudio.current = false;
+
+      if (audioQueue.current.length > 0) {
+        processAudioQueue();
+      } else {
+        setStatus("Waiting for more audio data...");
+      }
     };
-    source.start(0);
-    setStatus('Playing audio stream');
   };
 
-
-
   const triggerFlow = () => {
-    console.log("Triggered")
+    console.log("Triggered");
     socketRef?.current?.emit("test_flow", {
-      data: "Write a Poem for me"
-    })
-  }
+      data: "Create a Jimmy Kimmel style opening speech on a debate between two individuals Donald Trump (as current president of United States) and Narendra Modi on Tarrifs, I will use that speech in my podcast.",
+    });
+  };
 
   return (
     <div className="h-full flex justify-center items-center flex-col gap-y-5">
       <p>Status: {status}</p>
       <p>Connected {isConnected}</p>
       <Button onClick={triggerFlow}>Trigger Flow</Button>
-      {responseText && <Card className="max-w-sm">
-        <CardContent>{responseText}</CardContent>
-      </Card>}
+      {responseText && (
+        <Card className="max-w-sm">
+          <CardContent>{responseText}</CardContent>
+        </Card>
+      )}
     </div>
   );
 }
