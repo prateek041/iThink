@@ -16,6 +16,7 @@ export default function Debater({ role, currentTurn, onFinish }: DebaterArgs) {
   const [status, setStatus] = useState<string>("Idle");
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [responseText, setResponseText] = useState<string>("")
 
   const socketRef = useRef<Socket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -88,6 +89,12 @@ export default function Debater({ role, currentTurn, onFinish }: DebaterArgs) {
         console.log("Audio saved:", data);
         setStatus(`Audio saved as: ${data.filename}`);
       });
+
+      socket.on("text_final_response", (data) => {
+        console.log("FINAL TRANSCRIPT TO BE SENT", data)
+        setResponseText(data)
+        // onFinish(data)
+      })
 
       socket.on("response_audio_delta", (event: ResponseAudioDeltaEvent) => {
         console.log("FRONTED RECEIVING", event);
@@ -223,6 +230,14 @@ export default function Debater({ role, currentTurn, onFinish }: DebaterArgs) {
         <CardContent className="flex flex-col gap-y-5">
           <p>Status: {status}</p>
           <p>Connected {isConnected}</p>
+          {
+            responseText &&
+            <Card>
+              <CardContent>
+                {responseText}
+              </CardContent>
+            </Card>
+          }
           <Button onClick={triggerFlow}>Trigger Flow</Button>
         </CardContent>
       </Card>
