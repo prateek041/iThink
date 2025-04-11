@@ -91,6 +91,7 @@ export default function RealTimeTalk() {
       });
 
       socket.on("response_text_delta", (data: ResponseTextDeltaEvent) => {
+        console.log("FRONTEND RECEIVING TEXT", data)
         setResponseText((prev) => prev + data.delta);
       });
     };
