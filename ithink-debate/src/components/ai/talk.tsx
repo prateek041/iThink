@@ -7,17 +7,23 @@ import { io, Socket } from "socket.io-client";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 interface DebaterArgs {
-  role: string,
-  currentTurn: string,
-  onFinish: (responseText: string) => void
-  lastMessage: string
+  role: string;
+  currentTurn: string | null;
+  onFinish: (responseText: string) => void;
+  lastMessage: string;
 }
 
-export default function Debater({ role, currentTurn, onFinish, lastMessage }: DebaterArgs) {
+export default function Debater({
+  role,
+  currentTurn,
+  onFinish,
+  lastMessage,
+}: DebaterArgs) {
   const [status, setStatus] = useState<string>("Idle");
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [responseText, setResponseText] = useState<string>("")
+  const [responseText, setResponseText] = useState<string>("");
+  const didMount = useRef(false);
 
   const socketRef = useRef<Socket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -28,6 +34,7 @@ export default function Debater({ role, currentTurn, onFinish, lastMessage }: De
 
   // Socket connection setup
   useEffect(() => {
+    console.log("socket connection useEffect");
     let socket: Socket | null = null;
 
     const AudioContext = window.AudioContext;
@@ -92,10 +99,10 @@ export default function Debater({ role, currentTurn, onFinish, lastMessage }: De
       });
 
       socket.on("text_final_response", (data) => {
-        console.log("FINAL TRANSCRIPT TO BE SENT", data)
-        setResponseText(data)
-        onFinish(data)
-      })
+        console.log("FINAL TRANSCRIPT TO BE SENT", data);
+        setResponseText(data);
+        onFinish(data);
+      });
 
       socket.on("response_audio_delta", (event: ResponseAudioDeltaEvent) => {
         console.log("FRONTED RECEIVING", event);
@@ -113,15 +120,38 @@ export default function Debater({ role, currentTurn, onFinish, lastMessage }: De
   }, []);
 
   useEffect(() => {
-    console.log("COMPONENT", role)
-    console.log("CURRENT ROLE", currentTurn)
-    if (currentTurn == role && socketRef.current) {
-      console.log("I was run too")
-      socketRef?.current?.emit("test_flow", {
-        data: "Create a Jimmy Kimmel style opening speech on a debate between two individuals Donald Trump (as current president of United States) and Narendra Modi on Tarrifs, I will use that speech in my podcast.",
+    if (!didMount.current) {
+      didMount.current = true;
+      return;
+    }
+
+    console.log("lastMessage", lastMessage);
+
+    if (currentTurn === null) {
+      return;
+    }
+
+    if (currentTurn === role && socketRef.current) {
+      socketRef.current.emit("test_flow", {
+        data: `You are a part of a debate system. Your role is "${role}", so you will argue with keeping your role in mind.
+     your responsibility is to debate with the other person and convince them. You will speak like a normal person in normal english and will not speak much, this is a podcast!.
+     Last Message from them is ${lastMessage}`,
+      });
+
+      socketRef.current.on("text_final_response", (AIResponse) => {
+        // Check audio playback status every 100ms
+        const checkInterval = setInterval(() => {
+          if (!isPlaying && audioQueue.current.length === 0) {
+            clearInterval(checkInterval);
+            // Add 2 second delay after audio finishes
+            setTimeout(() => {
+              onFinish(AIResponse);
+            }, 2000);
+          }
+        }, 100);
       });
     }
-  }, [currentTurn, socketRef.current, lastMessage, role])
+  }, [currentTurn, role, onFinish]);
 
   // useEffect(() => {
   //   console.log("I am finally triggered", responseText)
@@ -243,18 +273,17 @@ export default function Debater({ role, currentTurn, onFinish, lastMessage }: De
   return (
     <div className="h-full flex w-full justify-center items-center flex-col gap-y-5">
       <Card className="w-full">
-        <CardHeader><CardTitle>{role}</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>{role}</CardTitle>
+        </CardHeader>
         <CardContent className="flex flex-col gap-y-5">
           <p>Status: {status}</p>
           <p>Connected {isConnected}</p>
-          {
-            responseText &&
+          {responseText && (
             <Card>
-              <CardContent>
-                {responseText}
-              </CardContent>
+              <CardContent>{responseText}</CardContent>
             </Card>
-          }
+          )}
           <Button onClick={triggerFlow}>Trigger Flow</Button>
         </CardContent>
       </Card>
