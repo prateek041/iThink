@@ -1,12 +1,20 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { ResponseAudioDeltaEvent } from "openai/resources/responses/responses.mjs";
 import React, { useState, useRef, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface DebaterArgs {
+  avatarUrl: string;
   role: string;
   currentTurn: string | null;
   onFinish: (responseText: string) => void;
@@ -15,6 +23,7 @@ interface DebaterArgs {
 }
 
 export default function Debater({
+  avatarUrl,
   role,
   currentTurn,
   onFinish,
@@ -135,9 +144,8 @@ export default function Debater({
 
     if (currentTurn === role && socketRef.current) {
       socketRef.current.emit("test_flow", {
-        data: `You are a part of a debate system. Your role is "${role}", so you will argue with keeping your role in mind.
-     your responsibility is to debate with the other person and convince them. You will speak like a normal person in normal english and will not speak much, this is a podcast!.
-     Last Message from them is ${lastMessage}`,
+        data: `You're a guest on a lively podcast debate. Your role is '${role}', and you must very agressively argue from that point of view. Your job is to keep the conversation fun, sharp, and convincing — like you're trying to win over the other guest and the audience, use very less words. Speak like a real person: be witty, punchy, and don't ramble. Short and spicy is better than long and boring.
+Important: Don't agree too easily — challenge their points right away, question their assumptions, and push back when you can (even disrespectfully, and with some fire), even ask questions. The last thing they said was: '${lastMessage}'. You must Win!! Now, hit back!`,
       });
 
       socketRef.current.on("text_final_response", (AIResponse) => {
@@ -268,30 +276,114 @@ export default function Debater({
     };
   };
 
-  const triggerFlow = () => {
-    console.log("Triggered");
-    socketRef?.current?.emit("test_flow", {
-      data: "Create a Jimmy Kimmel style opening speech on a debate between two individuals Donald Trump (as current president of United States) and Narendra Modi on Tarrifs, I will use that speech in my podcast.",
-    });
-  };
+  // Animated wave component for the speaking indicator
+  const WaveAnimation = () => (
+    <div className="flex gap-1 items-center h-3">
+      {[1, 2, 3, 4].map((i) => (
+        <motion.div
+          key={i}
+          className="w-0.5 bg-primary"
+          animate={{
+            height: [8, 16, 8],
+          }}
+          transition={{
+            duration: 0.5,
+            repeat: Infinity,
+            delay: i * 0.1,
+          }}
+        />
+      ))}
+    </div>
+  );
 
   return (
-    <div className="h-full flex w-full justify-center items-center flex-col gap-y-5">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>{role}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-y-5">
-          <p>Status: {status}</p>
-          <p>Connected {isConnected}</p>
-          {responseText && (
-            <Card>
-              <CardContent>{responseText}</CardContent>
-            </Card>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="relative h-full w-full overflow-hidden bg-background/90 rounded-xl border border-border/50 backdrop-blur-md shadow-lg"
+    >
+      {/* Connection status indicator */}
+      <div className="absolute top-3 right-3 flex items-center gap-2 px-2 py-1 rounded-full bg-background/90 backdrop-blur-md border border-border/50">
+        <motion.div
+          className={cn(
+            "w-2 h-2 rounded-full transition-colors duration-200",
+            isConnected
+              ? "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]"
+              : "bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.4)]"
           )}
-          <Button onClick={triggerFlow}>Trigger Flow</Button>
-        </CardContent>
-      </Card>
-    </div>
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+        />
+        <span className="text-xs font-medium text-muted-foreground">
+          {isConnected ? "Connected" : "Disconnected"}
+        </span>
+      </div>
+
+      {/* Glossy reflections */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-0 right-0 h-[60%] bg-primary/5 opacity-20 blur-2xl rounded-full transform -translate-y-1/2 scale-150" />
+        <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-background opacity-30 blur-md" />
+      </div>
+
+      {/* Main content */}
+      <div className="relative h-full flex flex-col p-6 gap-6">
+        {/* Role header */}
+        <motion.div
+          className="flex items-center gap-6"
+          initial={{ y: -20 }}
+          animate={{ y: 0 }}
+        >
+          <div className="relative h-24 w-24 rounded-full overflow-hidden border-2 border-primary/20 shadow-lg">
+            <Image
+              src={avatarUrl}
+              alt={`${role} avatar`}
+              fill
+              className="object-cover"
+              sizes="96px"
+              priority
+            />
+            <div className="absolute inset-0 bg-primary/5 mix-blend-overlay" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold text-foreground">{role}</h2>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+              {isPlaying && <WaveAnimation />}
+              <span>{isPlaying ? "Speaking" : "Listening"}</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Response display */}
+        <AnimatePresence mode="wait">
+          {responseText && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="flex-1 max-h-[400px]"
+            >
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="message" className="border-none">
+                  <AccordionTrigger className="py-2 px-4 rounded-lg hover:bg-primary/5 transition-colors">
+                    <span className="text-sm font-medium">
+                      View Message Transcript
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-2 pb-4">
+                    <div className="bg-background/50 backdrop-blur-sm rounded-xl border border-border/50 p-6 shadow-inner">
+                      <div className="max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/10 scrollbar-track-transparent">
+                        <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap">
+                          {responseText}
+                        </p>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
   );
 }
