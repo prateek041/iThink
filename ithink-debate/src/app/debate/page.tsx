@@ -19,6 +19,7 @@ export default function DebatePage() {
   const [currentTurn, setCurrentTurn] = useState<string | null>(null);
   const [lastMessage, setLastMessage] = useState<string>("");
   const [debateHistory, setDebateHistory] = useState<History[]>([]);
+  const [isDebateActive, setIsDebateActive] = useState<boolean>(false);
 
   // Redirect to home if no topic
   useEffect(() => {
@@ -30,7 +31,7 @@ export default function DebatePage() {
   }, [topic, router]);
 
   const onFinish = (responseText: string) => {
-    if (!currentTurn) return;
+    if (!currentTurn || !isDebateActive) return;
 
     setDebateHistory([
       ...debateHistory,
@@ -42,10 +43,12 @@ export default function DebatePage() {
 
   const stopDebate = () => {
     setCurrentTurn(null);
+    setIsDebateActive(false);
   };
 
   const startDebate = () => {
     setCurrentTurn("for");
+    setIsDebateActive(true);
   };
 
   if (!topic) return null;
@@ -58,6 +61,7 @@ export default function DebatePage() {
         <CardContent className="flex flex-col">
           <span>Current Turn: {currentTurn || "Not Started"}</span>
           <span>Last Message: {lastMessage}</span>
+          <span>Debate Active: {isDebateActive ? "Yes" : "No"}</span>
         </CardContent>
       </Card>
       <div className="grid grid-cols-2 gap-x-5 w-full">
@@ -66,12 +70,14 @@ export default function DebatePage() {
           currentTurn={currentTurn}
           onFinish={onFinish}
           lastMessage={lastMessage}
+          isDebateActive={isDebateActive}
         />
         <Debater
           role="against"
           currentTurn={currentTurn}
           onFinish={onFinish}
           lastMessage={lastMessage}
+          isDebateActive={isDebateActive}
         />
       </div>
       <div className="flex gap-y-2 flex-col mt-10">

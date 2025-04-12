@@ -11,6 +11,7 @@ interface DebaterArgs {
   currentTurn: string | null;
   onFinish: (responseText: string) => void;
   lastMessage: string;
+  isDebateActive: boolean;
 }
 
 export default function Debater({
@@ -18,6 +19,7 @@ export default function Debater({
   currentTurn,
   onFinish,
   lastMessage,
+  isDebateActive,
 }: DebaterArgs) {
   const [status, setStatus] = useState<string>("Idle");
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -127,7 +129,7 @@ export default function Debater({
 
     console.log("lastMessage", lastMessage);
 
-    if (currentTurn === null) {
+    if (currentTurn === null || !isDebateActive) {
       return;
     }
 
@@ -145,13 +147,16 @@ export default function Debater({
             clearInterval(checkInterval);
             // Add 2 second delay after audio finishes
             setTimeout(() => {
-              onFinish(AIResponse);
+              if (isDebateActive) {
+                // Only call onFinish if debate is still active
+                onFinish(AIResponse);
+              }
             }, 2000);
           }
         }, 100);
       });
     }
-  }, [currentTurn, role, onFinish]);
+  }, [currentTurn, role, onFinish, isDebateActive]);
 
   // useEffect(() => {
   //   console.log("I am finally triggered", responseText)
