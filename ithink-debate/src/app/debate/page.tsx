@@ -4,7 +4,7 @@ import Debater from "@/components/ai/talk";
 import { Button } from "@/components/ui/button";
 // import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { motion } from "framer-motion";
 
 interface History {
@@ -12,7 +12,7 @@ interface History {
   text: string;
 }
 
-export default function DebatePage() {
+function DebateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const topic = searchParams?.get("topic");
@@ -131,5 +131,13 @@ export default function DebatePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DebatePage() {
+  return (
+    <Suspense fallback={<div className="p-12 text-center">Loading...</div>}>
+      <DebateContent />
+    </Suspense>
   );
 }
