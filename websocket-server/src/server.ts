@@ -75,10 +75,10 @@ const whisperAPIVersion: string | undefined =
   process.env.AZURE_WHISPER_API_VERSION;
 const whisperAPIKey: string | undefined = process.env.AZURE_WHISPER_API_KEY;
 
-console.log("deployment", whisperDeploymentName)
-console.log("api key", whisperAPIKey)
-console.log("endpoint", whisperEndpoint)
-console.log("api key", whisperAPIKey)
+console.log("deployment", whisperDeploymentName);
+console.log("api key", whisperAPIKey);
+console.log("endpoint", whisperEndpoint);
+console.log("api key", whisperAPIKey);
 
 if (
   !azureEndpoint ||
@@ -151,7 +151,7 @@ async function getTranscript(connection: ConnectionPair) {
   try {
     // Combine all audio chunks
     const audioData = Buffer.concat(connection.audioBuffer);
-    let textResult: string = ""
+    let textResult: string = "";
 
     // Create WAV header
     // Azure OpenAI Realtime API uses 24kHz sample rate for audio output
@@ -197,7 +197,7 @@ async function getTranscript(connection: ConnectionPair) {
         file: fileStream,
       });
 
-      textResult = result.text
+      textResult = result.text;
 
       console.log(`Transcription obtained: ${result.text.substring(0, 50)}...`);
 
@@ -216,21 +216,35 @@ async function getTranscript(connection: ConnectionPair) {
       );
     } catch (transcriptionError) {
       console.error(`Error during transcription: ${transcriptionError}`);
-      process.exit()
+      process.exit();
     }
 
     // Reset audio buffer
     connection.audioBuffer = [];
     connection.isStreaming = false;
-    return textResult
+    return textResult;
   } catch (error) {
     console.error(`Error processing audio:`, error);
-    process.exit()
+    process.exit();
   }
 }
 
 // Basic HTTP server configuration.
-const httpServer = http.createServer((_, res) => {
+const httpServer = http.createServer((req, res) => {
+  // Health check endpoint
+  if (req.url === "/health") {
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(
+      JSON.stringify({
+        status: "ok",
+        timestamp: new Date().toISOString(),
+        service: "websocket-server",
+      })
+    );
+    return;
+  }
+
+  // Default response
   res.writeHead(200, { "content-type": "text/plain" });
   res.end("web-socketProxy server OK");
 });
@@ -309,8 +323,8 @@ io.on("connect", async (socket: Socket) => {
         // Only save if we have audio data
         if (connection.audioBuffer.length > 0) {
           const transcript = await getTranscript(connection);
-          console.log("transcript", transcript)
-          socket.emit("text_final_response", transcript)
+          console.log("transcript", transcript);
+          socket.emit("text_final_response", transcript);
         } else {
           console.log(`[${connectionId}] No audio data to save`);
         }
