@@ -199,16 +199,6 @@ async function getTranscript(connection: ConnectionPair) {
 
       textResult = result.text;
 
-      console.log(`Transcription obtained: ${result.text.substring(0, 50)}...`);
-
-      // Save transcription to a text file
-      const transcriptionFilename = `transcription_${timestamp}_${connection.sessionId}.txt`;
-      const transcriptionPath = path.join(
-        TRANSCRIPTION_OUTPUT_DIR,
-        transcriptionFilename
-      );
-      fs.writeFileSync(transcriptionPath, result.text);
-
       // Delete the temporary audio file
       fs.unlinkSync(filePath);
       console.log(
