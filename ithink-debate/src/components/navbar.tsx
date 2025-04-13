@@ -10,9 +10,9 @@ export function Navbar() {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="w-full sticky top-0 z-50 bg-background/30 backdrop-blur-[2px] border-b border-white/[0.02]"
+      className="w-full sticky top-0 z-20 bg-background/30 backdrop-blur-[2px] border-b border-white/[0.02]"
     >
-      <div className="container mx-auto flex justify-between items-center h-16 px-4">
+      <div className="container mx-auto max-w-4xl flex justify-between items-center px-4">
         <Link href="/">
           <motion.div
             whileHover={{ scale: 1.02 }}

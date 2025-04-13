@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const exampleTopics = [
   "USA Tarrifs, should you be scared as a citizen of US?",
-  "Particle Physics vs Quantum Physics, which is more valuable?",
+  "Is Quantum Physics more valuable than Particle Physics?",
   "Should AI be regulated?",
   "Is Global Warming Real?",
 ];
@@ -27,9 +27,9 @@ export function TopicSelector() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] w-full max-w-2xl mx-auto px-4">
+    <div className="flex flex-col h-full items-center justify-center py-5 w-full max-w-2xl mx-auto px-4">
       <div className="text-center space-y-6 w-full">
-        <h1 className="text-4xl font-bold tracking-tight">
+        <h1 className="text-5xl font-bold tracking-tight">
           What would you like to debate about?
         </h1>
         <p className="text-muted-foreground text-lg">
@@ -43,8 +43,8 @@ export function TopicSelector() {
             <Card
               key={index}
               className={cn(
-                "p-4 cursor-pointer hover:shadow-lg transition-shadow",
-                "text-sm text-center"
+                "p-4 cursor-pointer hover:shadow-lg rounded-md transition-shadow",
+                "text-sm text-start"
               )}
               onClick={() => handleTopicSelect(topic)}
             >

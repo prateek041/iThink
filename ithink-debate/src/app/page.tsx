@@ -2,66 +2,39 @@
 
 import { TopicSelector } from "@/components/topic/topic-selector";
 import { motion } from "framer-motion";
+import { useTheme } from "next-themes";
 
 export default function Home() {
+  const theme = useTheme()
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-background">
-      {/* Background Elements */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-background">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))] dark:bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(255,255,255,0.15),rgba(255,255,255,0))]" />
-        </div>
-
-        {/* Animated circles */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-          <motion.div
-            className="absolute w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl"
-            animate={{
-              x: [0, 100, 0],
-              y: [0, 50, 0],
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
-          <motion.div
-            className="absolute right-0 bottom-0 w-[400px] h-[400px] rounded-full bg-secondary/5 blur-3xl"
-            animate={{
-              x: [0, -50, 0],
-              y: [0, 100, 0],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 15,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
-        </div>
-
-        {/* Grid pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.015]"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
-            backgroundSize: "32px 32px",
-          }}
+      <div className="absolute w-full h-full inset-0">
+        {/* video is not playing */}
+        <video
+          src={theme.theme === "light" ? "/ascii-light.mp4" : "/ascii-2.mp4"}
+          autoPlay={true}
+          loop={true}
+          muted={true}
+          className="h-full w-full object-cover"
         />
       </div>
+      <main className="flex-1 flex flex-col bg-card/60 backdrop-blur-md items-center justify-center relative z-10 px-4">
+        <div className="absolute top-0 bottom-0 left-10 w-[0.5px] bg-foreground"></div>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center relative z-10 px-4">
+        <div className="absolute top-0 bottom-0 right-10 w-[0.5px] bg-foreground "></div>
+
+        <div className="absolute top-10 left-0 right-0 h-[0.5px] bg-foreground "></div>
+
+        <div className="absolute bottom-10 left-0 right-0 h-[0.5px] bg-foreground"></div>
         <motion.div
-          className="w-full max-w-[600px]"
-          initial={{ opacity: 0, y: 20 }}
+          className="w-full h-full m-10"
+          initial={{ opacity: 0.5, y: 0 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.8 }}
         >
-          <TopicSelector />
+          <div className="w-full ">
+            <TopicSelector />
+          </div>
         </motion.div>
 
         {/* Feature highlights */}

@@ -2,10 +2,12 @@
 
 import Debater from "@/components/ai/talk";
 import { Button } from "@/components/ui/button";
-// import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useTheme } from "next-themes";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Separator } from "@/components/ui/separator";
 
 interface History {
   role: string;
@@ -13,6 +15,7 @@ interface History {
 }
 
 function DebateContent() {
+  const theme = useTheme()
   const router = useRouter();
   const searchParams = useSearchParams();
   const topic = searchParams?.get("topic");
@@ -51,87 +54,149 @@ function DebateContent() {
     setCurrentTurn("for");
     setIsDebateActive(true);
   };
+  // const date = new Date().toDateString()
 
   if (!topic) return null;
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background">
-      {/* Background gradients */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Primary gradient */}
-        <div className="absolute top-0 left-0 w-full h-[50vh] bg-gradient-to-br from-primary/20 via-primary/5 to-transparent dark:from-primary/10 dark:via-primary/5" />
-        {/* Secondary gradient */}
-        <div className="absolute bottom-0 right-0 w-full h-[50vh] bg-gradient-to-tl from-secondary/20 via-secondary/5 to-transparent dark:from-secondary/10 dark:via-secondary/5" />
-        {/* Radial overlay */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))] dark:bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(255,255,255,0.15),rgba(255,255,255,0))]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_120%,rgba(120,119,198,0.1),rgba(255,255,255,0))] dark:bg-[radial-gradient(ellipse_80%_80%_at_50%_120%,rgba(255,255,255,0.15),rgba(255,255,255,0))]" />
-        </div>
+      <div className="absolute w-full h-full inset-0">
+        {/* video is not playing */}
+        <video
+          src={theme.theme === "light" ? "/ascii-light.mp4" : "/ascii-2.mp4"}
+          autoPlay={true}
+          loop={true}
+          muted={true}
+          className="h-full w-full object-cover"
+        />
       </div>
 
       {/* Main content */}
-      <div className="container relative mx-auto flex flex-col items-center min-h-screen py-12">
-        {/* Topic display */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full mb-16"
-        >
-          <div className="max-w-[800px] mx-auto px-6">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-foreground leading-tight tracking-tight">
-              {topic}
-            </h1>
-            <div className="h-px w-20 bg-primary/20 mt-6" />
-          </div>
-        </motion.div>
+      <div className="bg-card/60 backdrop-blur-lg flex flex-col items-center justify-center min-h-screen py-10">
+        <div className="absolute top-0 bottom-0 md:left-10 left-5 w-[0.5px] bg-foreground"></div>
+        <div className="absolute top-0 bottom-0 md:right-10 right-5 w-[0.5px] bg-foreground "></div>
+        <div className="absolute md:top-10 top-5 left-0 right-0 h-[0.5px] bg-foreground "></div>
+        <div className="absolute md:bottom-10 bottom-5 left-0 right-0 h-[0.5px] bg-foreground"></div>
 
-        {/* Debaters grid */}
-        <div className="w-full max-w-[1400px] mx-auto px-6 mb-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-            <div className="h-[600px]">
-              <Debater
-                avatarUrl="/right.png"
-                role="for"
-                currentTurn={currentTurn}
-                onFinish={onFinish}
-                lastMessage={lastMessage}
-                isDebateActive={isDebateActive}
-              />
+        <div className="container w-full h-full  mx-auto">
+          {/* Topic display */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full mb-16"
+          >
+            <div className="mx-auto flex md:flex-row flex-col justify-between items-center md:px-6 px-10 gap-y-5">
+              <div>
+                <h1 className="text-3xl font-semibold text-foreground leading-tight tracking-tight">
+                  {topic}
+                </h1>
+                <div className="flex gap-x-2 items-end ">
+                  {/* <h3 className="text-sm"> */}
+                  {/*   Episode 1 */}
+                  {/* </h3> */}
+                  {/* <p className="text-xs text-muted-foreground">{date}</p> */}
+                </div>
+              </div>
+
+              {/* Control buttons */}
+              <div className="flex items-center gap-4">
+                <Button
+                  onClick={startDebate}
+                  disabled={currentTurn !== null}
+                  className="cursor-pointer rounded-xs"
+                >
+                  Start Debate
+                </Button>
+                <Button
+                  onClick={stopDebate}
+                  variant="outline"
+                  disabled={currentTurn === null}
+                  className="cursor-pointer rounded-xs"
+                >
+                  Stop Debate
+                </Button>
+              </div>
             </div>
-            <div className="h-[600px]">
-              <Debater
-                avatarUrl="/left.png"
-                role="against"
-                currentTurn={currentTurn}
-                onFinish={onFinish}
-                lastMessage={lastMessage}
-                isDebateActive={isDebateActive}
-              />
+            <div className="w-full px-5 mx-auto">
+              <Separator className="mt-5" />
+            </div>
+          </motion.div>
+
+          {/* Debaters grid */}
+          <div className="w-full flex flex-col gap-y-4 max-w-[1400px] mx-auto px-6 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+              <div >
+                <Debater
+                  avatarUrl="/naruto-green.png"
+                  role="for"
+                  currentTurn={currentTurn}
+                  onFinish={onFinish}
+                  lastMessage={lastMessage}
+                  isDebateActive={isDebateActive}
+                />
+              </div>
+              <div >
+                <Debater
+                  avatarUrl="/jotaro-green.png"
+                  role="against"
+                  currentTurn={currentTurn}
+                  onFinish={onFinish}
+                  lastMessage={lastMessage}
+                  isDebateActive={isDebateActive}
+                />
+              </div>
+            </div>
+            <div>
+              <AnimatePresence mode="wait">
+                {debateHistory && debateHistory.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="flex-1 max-h-[400px]"
+                  >
+                    <Accordion type="single" collapsible className="w-full">
+                      <AccordionItem value="message" className="border-none">
+                        <AccordionTrigger className="py-2 px-4 rounded-lg hover:bg-primary/5 transition-colors">
+                          <span className="text-sm font-medium">
+                            View Debate So Far
+                          </span>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-2 pb-4">
+                          <div className="bg-background/50 backdrop-blur-sm rounded-xl border border-border/50 p-6 shadow-inner">
+                            <div className="max-h-[300px] overflow-y-auto pr-2">
+                              <div className="text-foreground/90 flex flex-col leading-relaxed whitespace-pre-wrap">
+                                {debateHistory.map((message, index) => {
+                                  return (
+                                    <DebateMessage key={index} message={message} />
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
-        </div>
-
-        {/* Control buttons */}
-        <div className="flex gap-4 mt-auto">
-          <Button
-            onClick={startDebate}
-            disabled={currentTurn !== null}
-            className="bg-primary/90 hover:bg-primary text-primary-foreground px-8 py-6 text-lg rounded-full transition-colors"
-          >
-            Start Debate
-          </Button>
-          <Button
-            onClick={stopDebate}
-            variant="outline"
-            disabled={currentTurn === null}
-            className="px-8 py-6 text-lg rounded-full border-primary/20 hover:bg-primary/5"
-          >
-            Stop Debate
-          </Button>
         </div>
       </div>
     </div>
   );
+}
+
+const DebateMessage = ({ message }: { message: History }) => {
+  const role = message.role[0].toUpperCase() + message.role.slice(1)
+  return (
+    <div className="flex flex-col gap-y-2 my-2">
+      <h1 className={`font-semibold text-md ${message.role === "for" ? "text-green-700" : "text-red-500"}`}>{role}:</h1>
+      <div>{message.text}</div>
+      <Separator />
+    </div>
+  )
 }
 
 export default function DebatePage() {

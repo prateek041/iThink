@@ -300,7 +300,7 @@ Important: Don't agree too easily — challenge their points right away, questio
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="relative h-full w-full overflow-hidden bg-background/90 rounded-xl border border-border/50 backdrop-blur-md shadow-lg"
+      className="relative overflow-hidden bg-background/90 rounded-xl border border-border/50 backdrop-blur-md shadow-lg"
     >
       {/* Connection status indicator */}
       <div className="absolute top-3 right-3 flex items-center gap-2 px-2 py-1 rounded-full bg-background/90 backdrop-blur-md border border-border/50">
@@ -345,7 +345,7 @@ Important: Don't agree too easily — challenge their points right away, questio
             <div className="absolute inset-0 bg-primary/5 mix-blend-overlay" />
           </div>
           <div>
-            <h2 className="text-3xl font-bold text-foreground">{role}</h2>
+            <h2 className="text-sm font-bold text-foreground">{"For"}</h2>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
               {isPlaying && <WaveAnimation />}
               <span>{isPlaying ? "Speaking" : "Listening"}</span>
@@ -354,35 +354,35 @@ Important: Don't agree too easily — challenge their points right away, questio
         </motion.div>
 
         {/* Response display */}
-        <AnimatePresence mode="wait">
-          {responseText && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="flex-1 max-h-[400px]"
-            >
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="message" className="border-none">
-                  <AccordionTrigger className="py-2 px-4 rounded-lg hover:bg-primary/5 transition-colors">
-                    <span className="text-sm font-medium">
-                      View Message Transcript
-                    </span>
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-2 pb-4">
-                    <div className="bg-background/50 backdrop-blur-sm rounded-xl border border-border/50 p-6 shadow-inner">
-                      <div className="max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/10 scrollbar-track-transparent">
-                        <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap">
-                          {responseText}
-                        </p>
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* <AnimatePresence mode="wait"> */}
+        {/*   {responseText && ( */}
+        {/*     <motion.div */}
+        {/*       initial={{ opacity: 0, y: 20 }} */}
+        {/*       animate={{ opacity: 1, y: 0 }} */}
+        {/*       exit={{ opacity: 0, y: -20 }} */}
+        {/*       className="flex-1 max-h-[400px]" */}
+        {/*     > */}
+        {/*       <Accordion type="single" collapsible className="w-full"> */}
+        {/*         <AccordionItem value="message" className="border-none"> */}
+        {/*           <AccordionTrigger className="py-2 px-4 rounded-lg hover:bg-primary/5 transition-colors"> */}
+        {/*             <span className="text-sm font-medium"> */}
+        {/*               View Message Transcript */}
+        {/*             </span> */}
+        {/*           </AccordionTrigger> */}
+        {/*           <AccordionContent className="pt-2 pb-4"> */}
+        {/*             <div className="bg-background/50 backdrop-blur-sm rounded-xl border border-border/50 p-6 shadow-inner"> */}
+        {/*               <div className="max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/10 scrollbar-track-transparent"> */}
+        {/*                 <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap"> */}
+        {/*                   {responseText} */}
+        {/*                 </p> */}
+        {/*               </div> */}
+        {/*             </div> */}
+        {/*           </AccordionContent> */}
+        {/*         </AccordionItem> */}
+        {/*       </Accordion> */}
+        {/*     </motion.div> */}
+        {/*   )} */}
+        {/* </AnimatePresence> */}
       </div>
     </motion.div>
   );
