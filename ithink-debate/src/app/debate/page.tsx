@@ -9,6 +9,25 @@ import { useTheme } from "next-themes";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
 
+const forAvatars = [
+  "/jotaro-green.png",
+  "/naruto-green.png",
+  "/sukuna-green.png",
+]
+
+const againstAvatars = [
+  "/jotaro-red.png",
+  "/naruto-red.png",
+  "/sukuna-red.png"
+]
+
+const getRandomNumber = (): number => {
+  const min = 0
+  const max = forAvatars.length - 1
+
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
 export interface DebateHistory {
   role: string;
   text: string;
@@ -129,7 +148,7 @@ function DebateContent() {
                 <Debater
                   topic={topic}
                   history={debateHistory}
-                  avatarUrl="/naruto-green.png"
+                  avatarUrl={forAvatars[getRandomNumber()]}
                   role="for"
                   currentTurn={currentTurn}
                   onFinish={onFinish}
@@ -140,8 +159,8 @@ function DebateContent() {
               <div >
                 <Debater
                   topic={topic}
+                  avatarUrl={againstAvatars[getRandomNumber()]}
                   history={debateHistory}
-                  avatarUrl="/jotaro-green.png"
                   role="against"
                   currentTurn={currentTurn}
                   onFinish={onFinish}
@@ -192,7 +211,7 @@ function DebateContent() {
   );
 }
 
-const DebateMessage = ({ message }: { message: History }) => {
+const DebateMessage = ({ message }: { message: DebateHistory }) => {
   const role = message.role[0].toUpperCase() + message.role.slice(1)
   return (
     <div className="flex flex-col gap-y-2 my-2">

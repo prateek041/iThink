@@ -404,7 +404,9 @@ export default function Debater({
             <h2 className="text-sm font-bold text-foreground">{aiRole}</h2>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
               {isPlaying && <WaveAnimation />}
-              <span>{isPlaying ? "Speaking" : "Listening"}</span>
+              <span>{
+                currentTurn === role ? "Speaking" : (currentTurn === null ? "Waiting for debate to start" : "Listening")
+              }</span>
             </div>
           </div>
         </motion.div>
