@@ -9,7 +9,7 @@ import { useTheme } from "next-themes";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
 
-interface History {
+export interface DebateHistory {
   role: string;
   text: string;
 }
@@ -22,7 +22,7 @@ function DebateContent() {
 
   const [currentTurn, setCurrentTurn] = useState<string | null>(null);
   const [lastMessage, setLastMessage] = useState<string>("");
-  const [debateHistory, setDebateHistory] = useState<History[]>([]);
+  const [debateHistory, setDebateHistory] = useState<DebateHistory[]>([]);
   const [isDebateActive, setIsDebateActive] = useState<boolean>(false);
 
   // Redirect to home if no topic
@@ -54,7 +54,7 @@ function DebateContent() {
     setCurrentTurn("for");
     setIsDebateActive(true);
   };
-  // const date = new Date().toDateString()
+  const date = new Date().toDateString()
 
   if (!topic) return null;
 
@@ -94,7 +94,7 @@ function DebateContent() {
                   {/* <h3 className="text-sm"> */}
                   {/*   Episode 1 */}
                   {/* </h3> */}
-                  {/* <p className="text-xs text-muted-foreground">{date}</p> */}
+                  <p className="text-xs text-muted-foreground">{date}</p>
                 </div>
               </div>
 
@@ -127,6 +127,8 @@ function DebateContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               <div >
                 <Debater
+                  topic={topic}
+                  history={debateHistory}
                   avatarUrl="/naruto-green.png"
                   role="for"
                   currentTurn={currentTurn}
@@ -137,6 +139,8 @@ function DebateContent() {
               </div>
               <div >
                 <Debater
+                  topic={topic}
+                  history={debateHistory}
                   avatarUrl="/jotaro-green.png"
                   role="against"
                   currentTurn={currentTurn}

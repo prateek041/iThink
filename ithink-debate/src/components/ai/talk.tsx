@@ -3,17 +3,14 @@
 import { ResponseAudioDeltaEvent } from "openai/resources/responses/responses.mjs";
 import React, { useState, useRef, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { DebateHistory } from "@/app/debate/page";
 
 interface DebaterArgs {
+  topic: string
+  history: DebateHistory[]
   avatarUrl: string;
   role: string;
   currentTurn: string | null;
@@ -23,6 +20,8 @@ interface DebaterArgs {
 }
 
 export default function Debater({
+  topic,
+  history,
   avatarUrl,
   role,
   currentTurn,
@@ -35,6 +34,9 @@ export default function Debater({
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [responseText, setResponseText] = useState<string>("");
   const didMount = useRef(false);
+
+  const aiRole = role[0].toUpperCase() + role.slice(1)
+  const historyString = history.map(item => `${item.role}: ${item.text}`).join('\n');
 
   const socketRef = useRef<Socket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -144,8 +146,62 @@ export default function Debater({
 
     if (currentTurn === role && socketRef.current) {
       socketRef.current.emit("test_flow", {
-        data: `You're a guest on a lively podcast debate. Your role is '${role}', and you must very agressively argue from that point of view. Your job is to keep the conversation fun, sharp, and convincing — like you're trying to win over the other guest and the audience, use very less words. Speak like a real person: be witty, punchy, and don't ramble. Short and spicy is better than long and boring.
-Important: Don't agree too easily — challenge their points right away, question their assumptions, and push back when you can (even disrespectfully, and with some fire), even ask questions. The last thing they said was: '${lastMessage}'. You must Win!! Now, hit back!`,
+        data:
+          `
+          HOST (smiling):
+          "Good evening, ladies and gentlemen! Welcome to the show —
+          the only place where you can find serious debates sandwiched
+          between bad jokes and way too many commercial breaks."
+
+          (Audience chuckles)
+
+          HOST:
+          "Tonight, we’re doing something a little different — we're
+          diving deep into a hot topic that's got everyone talking: ${topic}.
+          You know, the kind of thing that ruins family dinners and really
+          spices up the group chat."
+
+          (Pause for laugh)
+
+          HOST:
+          "We've brought in two experts — two real professionals, not just
+          people who Googled {topic} five minutes ago — although honestly,
+          that would still be better than most of Twitter."
+
+          (Audience laughs)
+
+          HOST:
+          "On this side, we have {ExpertForName}, who says YES — they believe
+          in {topic} so much, they probably have a bumper sticker about it."
+
+          (Point dramatically at one side)
+
+          HOST:
+          "And on this side, we have Jotaro from Jojo, who says NO — they're
+          here to crush dreams, debunk myths, and generally be the reason why
+          we can't have nice things."
+
+          (Audience laughs again)
+
+          HOST:
+          "So — sit back, grab some popcorn, and prepare to watch two brilliant
+          minds duke it out... politely. Or at least, pretend to."
+
+          You're a guest on a lively podcast debate. Your role is '${role}', and you
+          must very agressively  argue from that point of view. Your job is to keep
+          the conversation fun, sharp, and convincing — like you're trying to win
+          over the other guest and the audience, use very less words. Speak like a
+          real person: be witty, punchy, and don't ramble. Short and spicy is better
+          than long and boring.
+
+          Important: Don't agree too easily — challenge their points right away,
+          question their assumptions, and push back when you can (even disrespectfully,
+          and with some fire), even ask questions. Past conversations are:
+          '${historyString}' and their last reply was ${lastMessage}. You must Win!! Now, hit back!
+
+          Words not to use:
+          - Absolutely
+          - unprecidented`,
       });
 
       socketRef.current.on("text_final_response", (AIResponse) => {
@@ -345,44 +401,13 @@ Important: Don't agree too easily — challenge their points right away, questio
             <div className="absolute inset-0 bg-primary/5 mix-blend-overlay" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-foreground">{"For"}</h2>
+            <h2 className="text-sm font-bold text-foreground">{aiRole}</h2>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
               {isPlaying && <WaveAnimation />}
               <span>{isPlaying ? "Speaking" : "Listening"}</span>
             </div>
           </div>
         </motion.div>
-
-        {/* Response display */}
-        {/* <AnimatePresence mode="wait"> */}
-        {/*   {responseText && ( */}
-        {/*     <motion.div */}
-        {/*       initial={{ opacity: 0, y: 20 }} */}
-        {/*       animate={{ opacity: 1, y: 0 }} */}
-        {/*       exit={{ opacity: 0, y: -20 }} */}
-        {/*       className="flex-1 max-h-[400px]" */}
-        {/*     > */}
-        {/*       <Accordion type="single" collapsible className="w-full"> */}
-        {/*         <AccordionItem value="message" className="border-none"> */}
-        {/*           <AccordionTrigger className="py-2 px-4 rounded-lg hover:bg-primary/5 transition-colors"> */}
-        {/*             <span className="text-sm font-medium"> */}
-        {/*               View Message Transcript */}
-        {/*             </span> */}
-        {/*           </AccordionTrigger> */}
-        {/*           <AccordionContent className="pt-2 pb-4"> */}
-        {/*             <div className="bg-background/50 backdrop-blur-sm rounded-xl border border-border/50 p-6 shadow-inner"> */}
-        {/*               <div className="max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/10 scrollbar-track-transparent"> */}
-        {/*                 <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap"> */}
-        {/*                   {responseText} */}
-        {/*                 </p> */}
-        {/*               </div> */}
-        {/*             </div> */}
-        {/*           </AccordionContent> */}
-        {/*         </AccordionItem> */}
-        {/*       </Accordion> */}
-        {/*     </motion.div> */}
-        {/*   )} */}
-        {/* </AnimatePresence> */}
       </div>
     </motion.div>
   );
