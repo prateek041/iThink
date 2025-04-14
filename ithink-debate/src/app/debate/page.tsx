@@ -21,13 +21,6 @@ const againstAvatars = [
   "/sukuna-red.png"
 ]
 
-const getRandomNumber = (): number => {
-  const min = 0
-  const max = forAvatars.length - 1
-
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
-
 export interface DebateHistory {
   role: string;
   text: string;
@@ -148,7 +141,7 @@ function DebateContent() {
                 <Debater
                   topic={topic}
                   history={debateHistory}
-                  avatarUrl={forAvatars[getRandomNumber()]}
+                  avatarUrl={forAvatars[0]}
                   role="for"
                   currentTurn={currentTurn}
                   onFinish={onFinish}
@@ -159,7 +152,7 @@ function DebateContent() {
               <div >
                 <Debater
                   topic={topic}
-                  avatarUrl={againstAvatars[getRandomNumber()]}
+                  avatarUrl={againstAvatars[2]}
                   history={debateHistory}
                   role="against"
                   currentTurn={currentTurn}
