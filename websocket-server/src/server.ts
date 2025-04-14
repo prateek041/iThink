@@ -8,7 +8,6 @@ import { SessionCreatedEvent } from "openai/resources/beta/realtime/realtime";
 import { Session } from "openai/resources/beta/realtime/sessions";
 import fs from "fs";
 import path from "path";
-import { Readable } from "stream";
 
 dotenv.config({ path: ".env" });
 
@@ -62,6 +61,7 @@ interface ConnectionPair {
 }
 
 const connections = new Map<string, ConnectionPair>(); // Map socket.id -> ConnectionPair
+let connectionCounter = 0; // Counter to track total connections for voice allocation
 
 const azureEndpoint: string | undefined = process.env.AZURE_OPENAI_ENDPOINT;
 const deploymentName: string | undefined =
@@ -250,7 +250,11 @@ const io = new SocketIOServer(httpServer, {
 // New connection established
 io.on("connect", async (socket: Socket) => {
   const connectionId = socket.id; // get the unique connection id
-  console.log(`✅: ${connectionId} Client connected via socket.io`);
+  connectionCounter++; // Increment counter for each new connection
+  const selectedVoice = connectionCounter % 2 === 0 ? "ash" : "verse";
+  console.log(
+    `✅: ${connectionId} Client connected via socket.io (Voice: ${selectedVoice})`
+  );
 
   let azureRtClient: OpenAIRealtimeWS | null = null;
 
@@ -270,6 +274,7 @@ io.on("connect", async (socket: Socket) => {
             modalities: ["text", "audio"],
             model: "gpt-4o-mini-realtime-preview",
             input_audio_format: "pcm16", // PCM 16-bit format
+            voice: selectedVoice,
           },
         });
       }
