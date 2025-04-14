@@ -277,8 +277,6 @@ io.on("connect", async (socket: Socket) => {
         });
       }
 
-      console.log("THESE ARE THE TOOLS", event.session.tools)
-
       // Store connection with audio buffer
       connections.set(connectionId, {
         socket,
@@ -295,6 +293,10 @@ io.on("connect", async (socket: Socket) => {
 
     // Handle Function Calls
     azureRtClient.on("response.function_call_arguments.done", async (event) => {
+      socket.emit("function_calling", { name: "web search" })
+      // await new Promise((resolve, reject) => {
+      //   setTimeout(() => { resolve("done") }, 4000)
+      // })
       const funcArguments = event.arguments
       const response = await generalWebSearch(funcArguments)
       console.log("RESPONSE RESPONSE", response)
@@ -312,6 +314,9 @@ io.on("connect", async (socket: Socket) => {
       azureRtClient?.send({
         type: "response.create",
       });
+
+      socket.emit("function_called")
+
     })
 
 
@@ -385,8 +390,6 @@ io.on("connect", async (socket: Socket) => {
       }
     });
 
-    // Handle tool calls
-
     // Handle Azure WebSocket closure
     azureRtClient.socket.on("close", (code: number, reason: Buffer) => {
       console.log(
@@ -415,7 +418,6 @@ io.on("connect", async (socket: Socket) => {
 
     socket.on("test_flow", (payload: { data: string }) => {
       const connection = connections.get(connectionId);
-      console.log("TOOLS ARE HEREEEEERERERERERR:", connection?.azureSession.tools)
       console.log("Payload data", payload.data);
       if (!connection) {
         console.log("unable to find connection");
