@@ -7,10 +7,11 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { DebateHistory } from "@/app/debate/page";
+import { Spinner } from "../spinner";
 
 interface DebaterArgs {
-  topic: string
-  history: DebateHistory[]
+  topic: string;
+  history: DebateHistory[];
   avatarUrl: string;
   role: string;
   currentTurn: string | null;
@@ -33,10 +34,19 @@ export default function Debater({
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [responseText, setResponseText] = useState<string>("");
+  const [functionCallStatus, setFunctionCallStatus] = useState<{
+    calling: boolean;
+    name: string | null;
+  }>({
+    calling: false,
+    name: null,
+  });
   const didMount = useRef(false);
 
-  const aiRole = role[0].toUpperCase() + role.slice(1)
-  const historyString = history.map(item => `${item.role}: ${item.text}`).join('\n');
+  const aiRole = role[0].toUpperCase() + role.slice(1);
+  const historyString = history
+    .map((item) => `${item.role}: ${item.text}`)
+    .join("\n");
 
   const socketRef = useRef<Socket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -111,9 +121,25 @@ export default function Debater({
         setStatus(`Audio saved as: ${data.filename}`);
       });
 
+      socket.on("function_calling", (data: { name: string }) => {
+        console.log("Function being called:", data.name);
+        setFunctionCallStatus({
+          calling: true,
+          name: data.name,
+        });
+      });
+
+      socket.on("function_called", () => {
+        setFunctionCallStatus({
+          calling: false,
+          name: null,
+        });
+      });
+
       socket.on("text_final_response", (data) => {
         console.log("FINAL TRANSCRIPT TO BE SENT", data);
         setResponseText(data);
+        setFunctionCallStatus({ calling: false, name: null });
         onFinish(data);
       });
 
@@ -146,8 +172,7 @@ export default function Debater({
 
     if (currentTurn === role && socketRef.current) {
       socketRef.current.emit("test_flow", {
-        data:
-          `
+        data: `
           HOST (smiling):
           "Good evening, ladies and gentlemen! Welcome to the show —
           the only place where you can find serious debates sandwiched
@@ -156,7 +181,7 @@ export default function Debater({
           (Audience chuckles)
 
           HOST:
-          "Tonight, we’re doing something a little different — we're
+          "Tonight, we're doing something a little different — we're
           diving deep into a hot topic that's got everyone talking: ${topic}.
           You know, the kind of thing that ruins family dinners and really
           spices up the group chat."
@@ -229,11 +254,6 @@ export default function Debater({
     }
   }, [currentTurn, role, onFinish, isDebateActive]);
 
-  // useEffect(() => {
-  //   console.log("I am finally triggered", responseText)
-  //   onFinish(responseText)
-  // }, [responseText])
-  //
   const handleAudioChunk = (data: Base64URLString) => {
     try {
       if (!data) return;
@@ -411,9 +431,20 @@ export default function Debater({
             <h2 className="text-sm font-bold text-foreground">{aiRole}</h2>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
               {isPlaying && <WaveAnimation />}
-              <span>{
-                currentTurn === role ? "Speaking" : (currentTurn === null ? "Waiting for debate to start" : "Listening")
-              }</span>
+              <span>
+                {functionCallStatus.calling ? (
+                  <p className="flex gap-x-2">
+                    <Spinner size={"small"} />
+                    {`${functionCallStatus.name}`}
+                  </p>
+                ) : currentTurn === role ? (
+                  "Speaking"
+                ) : currentTurn === null ? (
+                  "Waiting for debate to start"
+                ) : (
+                  "Listening"
+                )}
+              </span>
             </div>
           </div>
         </motion.div>
