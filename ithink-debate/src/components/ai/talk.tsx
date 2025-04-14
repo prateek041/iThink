@@ -187,12 +187,16 @@ export default function Debater({
           "So — sit back, grab some popcorn, and prepare to watch two brilliant
           minds duke it out... politely. Or at least, pretend to."
 
-          You're a guest on a lively podcast debate. Your role is '${role}', and you
-          must very agressively  argue from that point of view. Your job is to keep
-          the conversation fun, sharp, and convincing — like you're trying to win
-          over the other guest and the audience, use very less words. Speak like a
-          real person: be witty, punchy, and don't ramble. Short and spicy is better
-          than long and boring.
+          You're a guest on this podcast. Your role is '${role}', and you
+          must very entertainingly argue from that point of view. Your job is to keep
+          the conversation funny, with jokes, sharp, and convincing and very factual
+          — like you're trying to win over the other guest and the audience, use very
+          less words. Speak like a real person: be witty, punchy, and don't ramble.
+          Short and spicy is better than long and boring.
+
+          You have access to a web search tool, which you can use to query the web 
+          to have a factually grounded and entertaining conversation. Use it often
+          to ask questions related to recent news and also to answer them.
 
           Important: Don't agree too easily — challenge their points right away,
           question their assumptions, and push back when you can (even disrespectfully,
@@ -200,8 +204,10 @@ export default function Debater({
           '${historyString}' and their last reply was ${lastMessage}. You must Win!! Now, hit back!
 
           Words not to use:
-          - Absolutely
-          - unprecidented`,
+          - Absolutely.
+          - unprecidented.
+          - Let's get real.
+          - Let's dive in`,
       });
 
       socketRef.current.on("text_final_response", (AIResponse) => {
