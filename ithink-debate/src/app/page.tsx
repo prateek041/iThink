@@ -23,10 +23,6 @@ export default function Home() {
         />
       </div>
       <main className="flex-1 flex flex-col bg-card/60 backdrop-blur-md items-center justify-center relative z-10 px-4">
-        <div className="absolute top-0 bottom-0 md:left-10 left-5 w-[0.5px] bg-foreground"></div>
-        <div className="absolute top-0 bottom-0 md:right-10 right-5 w-[0.5px] bg-foreground "></div>
-        <div className="absolute md:top-10 top-5 left-0 right-0 h-[0.5px] bg-foreground "></div>
-
 
         <motion.div
           className="w-full h-full m-10"
@@ -80,9 +76,6 @@ export default function Home() {
 
             </motion.div>
           ))}
-          <div className="hidden md:block absolute md:bottom-10 bottom-5 left-0 right-0 h-[0.5px] bg-foreground"></div>
-
-          <div className="md:hidden block mb-5 -translate-x-5 h-[0.5px] bg-foreground w-[500px]"></div>
         </motion.div>
       </main>
     </div>

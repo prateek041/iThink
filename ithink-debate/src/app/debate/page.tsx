@@ -85,11 +85,6 @@ function DebateContent() {
 
       {/* Main content */}
       <div className="bg-card/60 backdrop-blur-lg flex flex-col items-center justify-center min-h-screen py-10">
-        <div className="absolute top-0 bottom-0 md:left-10 left-5 w-[0.5px] bg-foreground"></div>
-        <div className="absolute top-0 bottom-0 md:right-10 right-5 w-[0.5px] bg-foreground "></div>
-        <div className="absolute md:top-10 top-5 left-0 right-0 h-[0.5px] bg-foreground "></div>
-        <div className="absolute md:bottom-10 bottom-5 left-0 right-0 h-[0.5px] bg-foreground"></div>
-
         <div className="container w-full h-full  mx-auto">
           {/* Topic display */}
           <motion.div
