@@ -198,7 +198,8 @@ export default function Debater({
           to have a factually grounded and entertaining conversation. Use it often
           to ask questions related to recent news and also to answer them.
 
-          Important: Don't agree too easily — challenge their points right away,
+          Important: Don't agree too easily, ask factual questions to check other person's
+          depth of knowledge — challenge their points,
           question their assumptions, and push back when you can (even disrespectfully,
           and with some fire), even ask questions. Past conversations are:
           '${historyString}' and their last reply was ${lastMessage}. You must Win!! Now, hit back!
